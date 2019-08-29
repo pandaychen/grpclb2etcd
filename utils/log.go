@@ -1,5 +1,7 @@
 package utils
 
+//使用lumberjack.v2对zap日志进行压缩
+
 import (
 	"errors"
 	"fmt"
