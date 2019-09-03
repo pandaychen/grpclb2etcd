@@ -127,6 +127,7 @@ func (w *EtcdWatcher) Watch() chan []resolver.Address {
 		for wresp := range w.WatchCh {
 			//block and go range,watching etcd events change
 			for _, ev := range wresp.Events {
+				//range  wresp.Events slice
 				switch ev.Type {
 				case mvccpb.PUT:
 					jsonobj := EtcdNodeJsonData{}
