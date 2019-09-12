@@ -35,7 +35,7 @@ func main() {
 
 	zlogger, _ := utils.ZapLoggerInit("helloworld")
 	//balancer.InitConsistentHashBuilder(balancer.DefaultConsistentHashKey)
-	srvdiscovery.RegisterResolver(enums.RT_ETCDV3, etcdConfg, etcdpath, zlogger) //第一个参数
+	srvdiscovery.RegisterResolver(string(enums.RT_ETCDV3), etcdConfg, etcdpath, zlogger) //第一个参数
 
 	//Dial-"etcd3:///" 指定reslver WithBalancerName--指定balancer
 
