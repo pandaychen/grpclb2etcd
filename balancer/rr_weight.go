@@ -13,10 +13,12 @@ import (
 
 const RoundRobin = "roundrobin"
 
+//可以封装balancer.SubConn，对每个Conn增加额外属性，如权重，成功率，服务端负载等
 
 //Picker inited by roundRobinPickerBuilder
 type roundRobinPicker struct {
-        subConns []balancer.SubConn
+		subConns []balancer.SubConn			//一个balancer.SubConn标识一个长连接
+											//subConns 标识所有活动连接数组
         mu       sync.Mutex
         next     int
 }
