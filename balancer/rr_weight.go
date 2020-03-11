@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"strconv"
 	"sync"
+	"fmt"
 )
 
 const RoundRobin = "roundrobin"
@@ -41,6 +42,7 @@ func (*roundRobinPickerBuilder) Build(readySCs map[resolver.Address]balancer.Sub
 	if len(readySCs) == 0 {
 		return base.NewErrPicker(balancer.ErrNoSubConnAvailable)
 	}
+	fmt.Println(readySCs)
 	var scs []balancer.SubConn
 	for addr, sc := range readySCs {
 		weight := 1
@@ -56,7 +58,7 @@ func (*roundRobinPickerBuilder) Build(readySCs map[resolver.Address]balancer.Sub
 			scs = append(scs, sc)
 		}
 	}
-
+	//Build的作用是：根据readyScs，构造LB算法选择用的初始化集合，当然可以根据权重对subConns进行调整
 	return &roundRobinPicker{
 		subConns: scs,
 		next:     rand.Intn(len(scs)),
@@ -64,10 +66,12 @@ func (*roundRobinPickerBuilder) Build(readySCs map[resolver.Address]balancer.Sub
 }
 
 
+//Picker方法：每次客户端RPC-CALL都会调用
 func (p *roundRobinPicker) Pick(ctx context.Context, opts balancer.PickOptions) (balancer.SubConn, func(balancer.DoneInfo), error) {
 	p.mu.Lock()
 	sc := p.subConns[p.next]
 	p.next = (p.next + 1) % len(p.subConns)
+	fmt.Println("picker",p.next)
 	p.mu.Unlock()
 	return sc, nil, nil
 }

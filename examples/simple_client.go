@@ -5,11 +5,12 @@ package main
 
 import (
 	"../balancer"
-	"../enums"
+	//"../enums"
 	proto "../proto"
 	srvdiscovery "../srv_discovery"
 	"../utils"
 	"flag"
+	"fmt"
 	etcd3 "go.etcd.io/etcd/clientv3"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -29,13 +30,13 @@ func main() {
 	}
 
 	etcdpath := srvdiscovery.EtcdKeyDirPath{
-		RootName:       srvdiscovery.G_ROOT_NAME,
-		ServiceType:    enums.ServiceType_RPC,
+		RootName: srvdiscovery.G_ROOT_NAME,
+		//ServiceType:    enums.ServiceType_RPC,
 		ServiceName:    "helloworld",
 		ServiceVersion: "v20190820"}
 
 	zlogger, _ := utils.ZapLoggerInit("helloworld")
-
+	fmt.Println(etcdpath)
 	srvdiscovery.RegisterResolver("etcdv3", etcdConfg, etcdpath, zlogger)
 
 	//Dial-"etcd3:///" 指定reslver WithBalancerName--指定balancer
@@ -46,7 +47,6 @@ func main() {
 	}
 	defer c.Close()
 	client := proto.NewTestClient(c)
-
 	for i := 0; i < 5000000; i++ {
 		resp, err := client.Say(context.Background(), &proto.SayReq{Content: "round robin"})
 		if err != nil {

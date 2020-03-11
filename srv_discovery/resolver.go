@@ -63,7 +63,7 @@ type EtcdKeyDirPath struct {
 }
 
 func GetCommonEtcdKeyPath(config EtcdKeyDirPath) string {
-	return fmt.Sprintf("/%s/%s/%s/%s", config.RootName, config.ServiceName, string(config.ServiceType), config.ServiceVersion)
+	return fmt.Sprintf("/%s/%s/%s", config.RootName, config.ServiceName, config.ServiceVersion)
 }
 
 /*

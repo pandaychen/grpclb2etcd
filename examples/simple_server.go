@@ -10,33 +10,33 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
-	"strings"
-	
-	"golang.org/x/net/context"
-	"google.golang.org/grpc"
-	etcd3 "go.etcd.io/etcd/clientv3"
+
+	"../enums"
 	proto "../proto"
 	srvdiscovery "../srv_discovery"
-	"../enums"
 	"../utils"
+	etcd3 "go.etcd.io/etcd/clientv3"
+	"golang.org/x/net/context"
+	"google.golang.org/grpc"
 )
 
-var SERVICE_NAME ="helloworld"
+var SERVICE_NAME = "helloworld"
 
 type Server struct {
-	Addr string
-	Weight int
-	Grpcsrv   *grpc.Server
+	Addr    string
+	Weight  int
+	Grpcsrv *grpc.Server
 }
 
 func NewRpcServer(addr string) *Server {
 	srv := grpc.NewServer()
 	rs := &Server{
-		Addr: addr,
-		Grpcsrv:    srv,
+		Addr:    addr,
+		Grpcsrv: srv,
 	}
 	return rs
 }
@@ -67,28 +67,28 @@ func (s *Server) Say(ctx context.Context, req *proto.SayReq) (*proto.SayResp, er
 func main() {
 	var nodeid = flag.String("snode", "node-1", "NODE ID")
 	var port = flag.Int("port", 11111, "PORT")
-	var etcd_addr =flag.String("endpoints","http://127.0.0.1:2379;http://127.0.0.1:2379","ENDPOINT")
+	var etcd_addr = flag.String("endpoints", "http://127.0.0.1:2379;http://127.0.0.1:2379", "ENDPOINT")
 	flag.Parse()
 
 	//check param
 
-	etcd_list :=strings.Split(*etcd_addr,";")
+	etcd_list := strings.Split(*etcd_addr, ";")
 
 	etcdConfg := etcd3.Config{
 		Endpoints: etcd_list,
 	}
 
-	zlogger,_:=utils.ZapLoggerInit(SERVICE_NAME)
+	zlogger, _ := utils.ZapLoggerInit(SERVICE_NAME)
 
 	//初始化服务注册
-	srv_register:=srvdiscovery.RegisterConfig{
-		EtcdConfig:  etcdConfg,
-		Logger: zlogger,
-		RootName: srvdiscovery.G_ROOT_NAME,
-		ServiceType:enums.ServiceType_RPC,
-		ServiceName: SERVICE_NAME,
+	srv_register := srvdiscovery.RegisterConfig{
+		EtcdConfig:     etcdConfg,
+		Logger:         zlogger,
+		RootName:       srvdiscovery.G_ROOT_NAME,
+		ServiceType:    enums.ServiceType_RPC,
+		ServiceName:    SERVICE_NAME,
 		ServiceVersion: "v20190820",
-		ServiceNodeID:      *nodeid,
+		ServiceNodeID:  *nodeid,
 		//RandomSuffix
 		NodeData: srvdiscovery.EtcdNodeJsonData{
 			AddrInfo: fmt.Sprintf("127.0.0.1:%d", *port),
