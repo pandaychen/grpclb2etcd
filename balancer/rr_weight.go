@@ -1,15 +1,14 @@
 package balancer
 
 import (
-	"context"
-	"google.golang.org/grpc/balancer"
-	"google.golang.org/grpc/balancer/base"
-	"google.golang.org/grpc/grpclog"
-	"google.golang.org/grpc/resolver"
+	//"context"
 	"math/rand"
 	"strconv"
 	"sync"
-	"fmt"
+
+	"github.com/pkg/errors"
+	"google.golang.org/grpc/balancer"
+	"google.golang.org/grpc/balancer/base"
 )
 
 const RoundRobin = "roundrobin"
@@ -18,16 +17,15 @@ const RoundRobin = "roundrobin"
 
 //Picker inited by roundRobinPickerBuilder
 type roundRobinPicker struct {
-		subConns []balancer.SubConn			//一个balancer.SubConn标识一个长连接
-											//subConns 标识所有活动连接数组
-        mu       sync.Mutex
-        next     int
+	subConns []balancer.SubConn //一个balancer.SubConn标识一个长连接
+	//subConns 标识所有活动连接数组
+	mu   sync.Mutex
+	next int
 }
-
 
 // newRoundRobinBuilder creates a new roundrobin balancer builder.
 func newRoundRobinBuilder() balancer.Builder {
-	return base.NewBalancerBuilderWithConfig(RoundRobin, &roundRobinPickerBuilder{}, base.Config{HealthCheck: true})
+	return base.NewBalancerBuilder(RoundRobin, &roundRobinPickerBuilder{}, base.Config{HealthCheck: true})
 }
 
 func init() {
@@ -36,17 +34,15 @@ func init() {
 
 type roundRobinPickerBuilder struct{}
 
-func (*roundRobinPickerBuilder) Build(readySCs map[resolver.Address]balancer.SubConn) balancer.Picker {
-	grpclog.Infof("roundrobinPicker: newPicker called with readySCs: %v", readySCs)
-	
-	if len(readySCs) == 0 {
+func (*roundRobinPickerBuilder) Build(buildInfo base.PickerBuildInfo) balancer.Picker {
+	if len(buildInfo.ReadySCs) == 0 {
 		return base.NewErrPicker(balancer.ErrNoSubConnAvailable)
 	}
-	fmt.Println(readySCs)
+	//fmt.Println(readySCs)
 	var scs []balancer.SubConn
-	for addr, sc := range readySCs {
+	for subconn, sc := range buildInfo.ReadySCs {
 		weight := 1
-		m, ok := addr.Metadata.(*map[string]string)
+		m, ok := sc.Address.Metadata.(*map[string]string)
 		w, ok := (*m)["weight"]
 		if ok {
 			n, err := strconv.Atoi(w)
@@ -55,7 +51,7 @@ func (*roundRobinPickerBuilder) Build(readySCs map[resolver.Address]balancer.Sub
 			}
 		}
 		for i := 0; i < weight; i++ {
-			scs = append(scs, sc)
+			scs = append(scs, subconn)
 		}
 	}
 	//Build的作用是：根据readyScs，构造LB算法选择用的初始化集合，当然可以根据权重对subConns进行调整
@@ -65,13 +61,24 @@ func (*roundRobinPickerBuilder) Build(readySCs map[resolver.Address]balancer.Sub
 	}
 }
 
-
 //Picker方法：每次客户端RPC-CALL都会调用
-func (p *roundRobinPicker) Pick(ctx context.Context, opts balancer.PickOptions) (balancer.SubConn, func(balancer.DoneInfo), error) {
+func (p *roundRobinPicker) Pick(balancer.PickInfo) (balancer.PickResult, error) {
+	var (
+		pickResult balancer.PickResult
+	)
 	p.mu.Lock()
 	sc := p.subConns[p.next]
 	p.next = (p.next + 1) % len(p.subConns)
-	fmt.Println("picker",p.next)
+	//fmt.Println("picker",p.next)
 	p.mu.Unlock()
-	return sc, nil, nil
+
+	if sc == nil {
+		return pickResult, errors.New("Pick one connection error")
+	}
+
+	if _, ok := sc.(balancer.SubConn); !ok {
+		return pickResult, errors.New("system error")
+	}
+	pickResult.SubConn = sc.(balancer.SubConn)
+	return pickResult, nil
 }
