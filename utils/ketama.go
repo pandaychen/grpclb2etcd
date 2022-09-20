@@ -133,7 +133,7 @@ func (k *KetamaConsistent) GetSrvNode(client_key string) (string, bool) {
 		return "", false
 	}
 	k.RLock()
-	defer k.RUnlock()	//HERE must use  k.RUnlock() (core if use  k.Unlock() )
+	defer k.RUnlock() //HERE must use  k.RUnlock() (core if use  k.Unlock() )
 
 	//计算客户端传入的client_key的hash值
 	hashval := int(k.hash([]byte(client_key)))

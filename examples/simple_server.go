@@ -15,11 +15,12 @@ import (
 	"syscall"
 	"time"
 
-	"../enums"
-	proto "../proto"
-	srvdiscovery "../srv_discovery"
-	"../utils"
-	etcd3 "go.etcd.io/etcd/clientv3"
+	"grpclb2etcd/enums"
+	proto "grpclb2etcd/proto"
+	srvdiscovery "grpclb2etcd/srv_discovery"
+	"grpclb2etcd/utils"
+
+	etcdv3 "go.etcd.io/etcd/client/v3"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 )
@@ -74,7 +75,7 @@ func main() {
 
 	etcd_list := strings.Split(*etcd_addr, ";")
 
-	etcdConfg := etcd3.Config{
+	etcdConfg := etcdv3.Config{
 		Endpoints: etcd_list,
 	}
 

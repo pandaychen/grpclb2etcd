@@ -2,13 +2,14 @@ package srv_discovery
 
 import (
 	"encoding/json"
-	etcdv3 "go.etcd.io/etcd/clientv3"
-	"go.etcd.io/etcd/mvcc/mvccpb"
+	"sync"
+	"time"
+
+	"go.etcd.io/etcd/api/v3/mvccpb"
+	etcdv3 "go.etcd.io/etcd/client/v3"
 	"go.uber.org/zap"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/resolver"
-	"sync"
-	"time"
 )
 
 /*

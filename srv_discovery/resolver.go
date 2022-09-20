@@ -1,13 +1,12 @@
 package srv_discovery
 
-//
-
 import (
-	"sync"
-	//"log"
-	"../enums"
 	"fmt"
-	etcdv3 "go.etcd.io/etcd/clientv3"
+	"sync"
+
+	"grpclb2etcd/enums"
+
+	etcdv3 "go.etcd.io/etcd/client/v3"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/resolver"
 )
@@ -80,7 +79,7 @@ func RegisterResolver(reso_scheme string, etcdConfig etcdv3.Config, config EtcdK
 }
 */
 // Build returns itself for resolver, because it's both a builder and a resolver.
-func (r *EtcdResolver) Build(target resolver.Target, cc resolver.ClientConn, opts resolver.BuildOption) (resolver.Resolver, error) {
+func (r *EtcdResolver) Build(target resolver.Target, cc resolver.ClientConn, opts resolver.BuildOptions) (resolver.Resolver, error) {
 	var err error
 	r.EtcdCli, err = etcdv3.New(r.EtcdConfig)
 	if err != nil {
@@ -118,7 +117,7 @@ func (r *EtcdResolver) start() {
 }
 
 // ResolveNow is a noop for resolver.
-func (r *EtcdResolver) ResolveNow(o resolver.ResolveNowOption) {
+func (r *EtcdResolver) ResolveNow(o resolver.ResolveNowOptions) {
 }
 
 // Close is a noop for resolver.
@@ -126,21 +125,6 @@ func (r *EtcdResolver) Close() {
 	r.Watcher.Close()
 	r.Wg.Wait()
 }
-
-/*
-func (r *EtcdResolver)PrintConfig(){
-	return
-	log.Printf("-------- %s --------\n", name)
-	log.Printf("Scheme: %s\n", r.scheme)
-	log.Printf("EtcdAddres: %v\n", r.EtcdAddrs)
-	log.Printf("SrvName: %s\n", r.SrvName)
-	log.Printf("SrvVersion: %s\n", r.SrvVersion)
-	log.Printf("SrvTTL: %d\n", r.SrvTTL)
-	log.Printf("KeyPrifix： %s\n", r.keyPrifix)
-	log.Printf("srvAddrsList： %v\n", r.srvAddrsList)
-	log.Printf("-------------------\n")
-}
-*/
 
 //注册resovler--客户端
 func RegisterResolver(reso_scheme string, etcdConfig etcdv3.Config, config EtcdKeyDirPath, zaplog *zap.Logger) {

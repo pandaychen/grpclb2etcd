@@ -4,7 +4,6 @@ package utils
 
 import (
 	"errors"
-	"fmt"
 	"os"
 
 	"go.uber.org/zap"
@@ -26,7 +25,7 @@ func InitLumberjack() *lumberjack.Logger {
 func ZapLoggerInit(logname string) (*zap.Logger, error) {
 	lumberhooker := InitLumberjack()
 	if lumberhooker == nil {
-		fmt.Println("[ERROR]Lumberjack Init Error")
+		//fmt.Println("[ERROR]Lumberjack Init Error")
 		return nil, errors.New("InitLumberjack error")
 	}
 

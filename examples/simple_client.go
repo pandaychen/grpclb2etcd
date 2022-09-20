@@ -4,19 +4,21 @@ package main
 //author:pandaychen
 
 import (
-	"../balancer"
-	//"../enums"
-	proto "../proto"
-	srvdiscovery "../srv_discovery"
-	"../utils"
 	"flag"
-	"fmt"
-	etcd3 "go.etcd.io/etcd/clientv3"
-	"golang.org/x/net/context"
-	"google.golang.org/grpc"
+	"grpclb2etcd/balancer"
 	"log"
 	"strings"
 	"time"
+
+	"grpclb2etcd/utils"
+
+	proto "grpclb2etcd/proto"
+
+	srvdiscovery "grpclb2etcd/srv_discovery"
+
+	etcdv3 "go.etcd.io/etcd/client/v3"
+	"golang.org/x/net/context"
+	"google.golang.org/grpc"
 )
 
 func main() {
@@ -25,7 +27,7 @@ func main() {
 
 	etcdlist := strings.Split(*etcd_addr, ";")
 
-	etcdConfg := etcd3.Config{
+	etcdConfg := etcdv3.Config{
 		Endpoints: etcdlist,
 	}
 
@@ -36,7 +38,7 @@ func main() {
 		ServiceVersion: "v20190820"}
 
 	zlogger, _ := utils.ZapLoggerInit("helloworld")
-	fmt.Println(etcdpath)
+	//fmt.Println(etcdpath)
 	srvdiscovery.RegisterResolver("etcdv3", etcdConfg, etcdpath, zlogger)
 
 	//Dial-"etcd3:///" 指定reslver WithBalancerName--指定balancer

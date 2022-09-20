@@ -3,19 +3,21 @@ package main
 //author:pandaychen
 
 import (
-	"../balancer"
-	"../enums"
-	proto "../proto"
-	srvdiscovery "../srv_discovery"
-	"../utils"
 	"flag"
 	"fmt"
-	etcd3 "go.etcd.io/etcd/clientv3"
-	"golang.org/x/net/context"
-	"google.golang.org/grpc"
 	"log"
 	"strings"
 	"time"
+
+	"grpclb2etcd/balancer"
+	"grpclb2etcd/enums"
+	proto "grpclb2etcd/proto"
+	srvdiscovery "grpclb2etcd/srv_discovery"
+	"grpclb2etcd/utils"
+
+	etcdv3 "go.etcd.io/etcd/client/v3"
+	"golang.org/x/net/context"
+	"google.golang.org/grpc"
 )
 
 func main() {
@@ -23,7 +25,7 @@ func main() {
 
 	etcdlist := strings.Split(*etcd_addr, ";")
 
-	etcdConfg := etcd3.Config{
+	etcdConfg := etcdv3.Config{
 		Endpoints: etcdlist,
 	}
 

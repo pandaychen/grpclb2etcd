@@ -5,13 +5,11 @@ import (
 	"fmt"
 	"time"
 
-	etcdv3 "go.etcd.io/etcd/clientv3"
-	"go.etcd.io/etcd/etcdserver/api/v3rpc/rpctypes"
+	etcdv3 "go.etcd.io/etcd/client/v3"
 	"go.uber.org/zap"
 	"golang.org/x/net/context"
-	//"google.golang.org/grpc/grpclog"
-	//import own lib
-	"../enums"
+
+	"grpclb2etcd/enums"
 )
 
 const (
@@ -114,13 +112,11 @@ func (et *EtcdRegister) RegisterByTimer() error {
 		_, err = et.Etcd3Client.Get(et.Ctx, et.Key)
 		if err != nil {
 			//the first time
-			if err == rpctypes.ErrKeyNotFound {
-				if _, err := et.Etcd3Client.Put(et.Ctx, et.Key, et.Value, etcdv3.WithLease(resp.ID)); err != nil {
-					et.Logger.Error("Set key with ttl error", zap.String("key", et.Key), zap.String("leaseid", fmt.Sprintf("%x", resp.ID)), zap.String("errmsg", err.Error()))
-				}
-			} else {
-				et.Logger.Error("Set key with lease failed(fatal error)", zap.String("key", et.Key), zap.String("leaseid", fmt.Sprintf("%x", resp.ID)), zap.String("errmsg", err.Error()))
+			//if err == rpctypes.ErrKeyNotFound {
+			if _, err := et.Etcd3Client.Put(et.Ctx, et.Key, et.Value, etcdv3.WithLease(resp.ID)); err != nil {
+				et.Logger.Error("Set key with ttl error", zap.String("key", et.Key), zap.String("leaseid", fmt.Sprintf("%x", resp.ID)), zap.String("errmsg", err.Error()))
 			}
+			//}
 			return err
 		} else {
 			// refresh set to true for not notifying the watcher
